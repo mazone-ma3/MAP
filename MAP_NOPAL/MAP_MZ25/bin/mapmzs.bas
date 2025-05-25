@@ -1,0 +1,1 @@
+   10 clear &H6000:click off   20 init "CRT2:640,200,16":width 80,12:cls 2   30 for I=1 to 7:color=(I,I+8):next I   40 color=(3,0)   50 bload "elmst.pcg",&H6000   60 bload "elmchrm.grp",&HE000   70 bload "elmap.obj",&HA000   80 bload "pcgmz.bin",&H8000   90 call &H8000  100 bload "mapmzs.bin",&H8000  110 cls  120 call &H8000

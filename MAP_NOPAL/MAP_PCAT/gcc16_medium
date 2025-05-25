@@ -1,0 +1,5 @@
+#! /bin/sh
+#
+/usr/bin/ia16-elf-gcc-6.3.0 -march=i8086 -mcmodel=medium -S $1.c
+/usr/bin/ia16-elf-as -Wall -o $1.out $1.s > $1.lst
+/usr/bin/ia16-elf-gcc-6.3.0 -march=i8086 -mcmodel=medium -o $1.EXE $1.out  -li86
