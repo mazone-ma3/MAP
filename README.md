@@ -14,3 +14,5 @@ MAP_COM LSX-Dodgers(Gaku氏作)及びMSX-DOS版(BASICは不要)
 WAKU7 FM77AV版に枠を加える実験
 
 MAP77AV2 FM77AV gcc6809別バージョン対応版
+
+BLOAD PC-98/PC-88/X1 MSX2 .SC5形式ローダ PC-88/X1版MAP_COMに枠が付けられます
