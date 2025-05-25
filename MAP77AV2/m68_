@@ -1,0 +1,8 @@
+#! /bin/sh
+m6809-unknown-as  -o crt0_.o  crt0.S
+m6809-unknown-gcc -S $1.c -mdata-section=.text -mbss-section=.text
+m6809-unknown-as  -o $1.o  $1.s
+m6809-unknown-ld -o $1.bin ./crt0_.o $1.o  -Ttext 0x6000
+# -Tbss 0x7400
+# -Tdata 0x6d00 -L/usr/lib/gcc\m6809-unknown/4.6.4/
+./fm7conv $1.bin $1.b77
