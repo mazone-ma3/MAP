@@ -5,9 +5,9 @@
 
 使用コンパイラ　z88dk、CMOC、gcc6809、gcc-ia16、High C、X68000 GCC
 
-MAP_NOPAL パレット無し版
+MAP_NOPAL パレットフェードインアウト無し版
 
-MAP_PAL パレット有り版
+MAP_PAL パレットフェードインアウト有り版
 
 MAP_COM LSX-Dodgers(Gaku氏作)及びMSX-DOS版(BASICは不要)
 
