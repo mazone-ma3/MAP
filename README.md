@@ -3,6 +3,8 @@
 
 ソースコード及びデータファイル(FM TOWNS版のみ実行ファイル付き)
 
+使用コンパイラ　z88dk、CMOC、gcc6809、gcc-ia16、High C、X68000 GCC
+
 MAP_NOPAL パレット無し版
 
 MAP_PAL パレット有り版
