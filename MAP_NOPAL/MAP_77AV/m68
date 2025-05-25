@@ -1,0 +1,6 @@
+#! /bin/sh
+/usr/local/bin/m6809-unknown-none-gcc-4.3.6 -S $1.c
+/usr/local/bin/as6809 -l -o $1.rel  $1.s
+/usr/local/bin/aslink -b .text=0x6000 -m $1.map /usr/local/lib/gcc/m6809-unknown-none/4.3.6/crt0.o $1.rel -s $1.s
+objcopy -I srec -O binary $1.s19 $1.bin
+./fm7conv $1.bin $1.b77

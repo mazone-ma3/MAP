@@ -1,0 +1,4 @@
+#! /bin/sh
+cmoc --stack-space=1 --org=6000 --usim $1.c
+objcopy -I srec -O binary $1.srec $1.bin
+./fm7conv $1.bin $1.b77
