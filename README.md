@@ -1,7 +1,7 @@
 # MAP
 日本製及びPC/AT各種レトロパソコンになるC言語+DISK-BASIC MAPスクロール表示実験
 
-ソースコード及びデータファイル(FM TOWNS版のみ実行ファイル付き)
+ソースコード及びデータファイル
 
 使用コンパイラ　z88dk、CMOC、gcc6809、gcc-ia16、High C、X68000 GCC
 
