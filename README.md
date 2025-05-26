@@ -17,7 +17,7 @@ MAP77AV2　FM77AV gcc6809別バージョン対応版
 
 BLOAD　PC-98/PC-88/X1 MSX2 .SC5形式ローダ PC-88/X1版MAP_COMに枠が付けられます
 
-BASICZ88　Z88DK設定ファイル
+BASICZ88　DISK-BASIC対応化修正版Z88DK設定ファイル & BSAVE形式変換ツール
 
 BMPMAP　BITMAPファイルを変換するコマンドラインツール　GCC等でコンパイル(一部変数名定義重複あり。エラーが出たら削ってください)
 
