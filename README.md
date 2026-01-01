@@ -20,5 +20,7 @@ BASICZ88　DISK-BASIC対応化修正版Z88DK設定ファイル & BSAVE形式変�
 
 BMPMAP　BITMAPファイルを変換するコマンドラインツール　GCC等でコンパイル(一部変数名定義重複あり。エラーが出たら削ってください)
 
+コンバータのソース中のコメントでシアンを置き換えるとなってるのはマゼンタの間違いです。
+
 詳細はWeb参照。
 <img width="2880" height="1920" alt="タイトルなし_" src="https://github.com/user-attachments/assets/db7c2117-2aaa-4c24-b3e3-3276a4b6c15c" />
