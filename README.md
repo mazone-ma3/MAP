@@ -23,4 +23,6 @@ BMPMAP　BITMAPファイルを変換するコマンドラインツール　GCC�
 コンバータのソース中のコメントでシアンを置き換えるとなってるのはマゼンタの間違いです。一部は第三パラメータを指定すると色を置き換えない代わりにマスクデータの出力が出来ます。
 
 詳細はWeb参照。
+
+Pyxel版もWebの方にあります。
 <img width="2880" height="1920" alt="タイトルなし_" src="https://github.com/user-attachments/assets/db7c2117-2aaa-4c24-b3e3-3276a4b6c15c" />
