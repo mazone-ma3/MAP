@@ -253,8 +253,7 @@ asm(
 
 }
 
-
-void sub_disable(void)
+void sub_disable1(void)
 {
 asm(
 "_SUBHLT:\n"
@@ -267,12 +266,43 @@ asm(
 	"lda	0xFD05\n"
 	"bpl	_LOOP\n" // *-3\n"
 );
+}
+
+void sub_disable(void)
+{
+	sub_disable1();
 
 //	msr_sv = *msr;
 asm(
 	"lda	0xfd93\n"
-	"sta	_msr_sv\n"
+	";sta	_msr_sv\n"
 	"ora	#0x80\n"
+	"sta	0xfd93\n"
+);
+//	*msr |= 0x80;
+}
+
+void sub_disable2(void)
+{
+	sub_disable1();
+
+/*asm(
+"_SUBHLT:\n"
+	"lda	0xFD05\n"
+	"bmi	_SUBHLT\n"
+	"orcc	#(0x50)\n"
+	"lda	#0x80\n"
+	"sta	0xFD05\n"
+"_LOOP:\n"
+	"lda	0xFD05\n"
+	"bpl	_LOOP\n" // *-3\n"
+);*/
+
+//	msr_sv = *msr;
+asm(
+	"lda	0xfd93\n"
+	";sta	_msr_sv\n"
+	"anda	#0x7f\n"
 	"sta	0xfd93\n"
 );
 //	*msr |= 0x80;
@@ -283,7 +313,8 @@ void sub_enable(void)
 //	*msr = msr_sv;
 
 asm(
-	"lda	_msr_sv\n"
+	";lda	_msr_sv\n"
+	"lda	#0"
 	"sta	0xfd93\n"
 
 	"ldb	0xFC80\n"
@@ -294,6 +325,7 @@ asm(
 	"andcc	#0xAF\n"
 );
 }
+
 
 void bank1_on()
 {
@@ -1309,6 +1341,10 @@ unsigned char sub_flag;
 
 int main(void)
 {
+asm(
+	"lda	0xfd93\n"
+	"sta	_msr_sv\n"
+);
 
 	for(i = 0; i < X_SIZE; ++i){
 		for(j = 0; j < Y_SIZE; ++j){
@@ -1658,6 +1694,11 @@ asm(
 	keyrepeat_on();
 	keyscan_off();
 	key_clear();
+
+asm(
+	"lda	_msr_sv\n"
+	"sta	0xfd93\n"
+);
 	return 0;
 }
 
