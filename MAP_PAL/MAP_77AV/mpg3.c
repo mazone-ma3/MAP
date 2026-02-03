@@ -270,7 +270,7 @@ asm(
 
 }
 
-void sub_disable(void)
+void sub_disable1(void)
 {
 asm(
 "_SUBHLT:\n"
@@ -283,12 +283,43 @@ asm(
 	"lda	0xFD05\n"
 	"bpl	_LOOP\n" // *-3\n"
 );
+}
+
+void sub_disable(void)
+{
+	sub_disable1();
 
 //	msr_sv = *msr;
 asm(
 	"lda	0xfd93\n"
 	"sta	_msr_sv\n"
 	"ora	#0x80\n"
+	"sta	0xfd93\n"
+);
+//	*msr |= 0x80;
+}
+
+void sub_disable2(void)
+{
+	sub_disable1();
+
+/*asm(
+"_SUBHLT:\n"
+	"lda	0xFD05\n"
+	"bmi	_SUBHLT\n"
+	"orcc	#(0x50)\n"
+	"lda	#0x80\n"
+	"sta	0xFD05\n"
+"_LOOP:\n"
+	"lda	0xFD05\n"
+	"bpl	_LOOP\n" // *-3\n"
+);*/
+
+//	msr_sv = *msr;
+asm(
+	"lda	0xfd93\n"
+	"sta	_msr_sv\n"
+	"anda	#0x7f\n"
 	"sta	0xfd93\n"
 );
 //	*msr |= 0x80;
@@ -1125,7 +1156,7 @@ void chr_sub(void)
 }
 
 //unsigned char cblue,cred,cgreen;
-unsigned char timer;
+//unsigned char timer;
 //unsigned short ccolor;
 
 /*パレット・セット*/
@@ -1147,7 +1178,7 @@ void pal_set(unsigned char pal_no, unsigned short color, unsigned char red, unsi
 	register unsigned char ra asm("a");
 	register unsigned char rb asm("b");
 
-	timer = 13;
+//	timer = 13;
 //	cblue = blue;
 //	cred = red;
 //	cgreen = green;
@@ -1164,6 +1195,13 @@ void pal_set(unsigned char pal_no, unsigned short color, unsigned char red, unsi
 	"ldb _cred\n"
 );*/
 	ry = color;
+
+asm(
+//	"ldb _cgreen\n"
+
+	"sty 0xfd30\n"
+);
+
 	ra = blue;
 	rb = red;
 
@@ -1173,9 +1211,6 @@ asm(
 	rb = green;
 
 asm(
-//	"ldb _cgreen\n"
-
-	"sty 0xfd30\n"
 	"jsr timing\n"
 	"stx 0xfd32\n"
 	"stb 0xfd34\n"
@@ -1184,17 +1219,17 @@ asm(
 
 "timing:\n"
 	"lda 0xfd12\n"
-	"bita #0x01\n"
+	"bita #0x01\n"	// VSYNC=1?
 	"bne tm04\n"
 "tm01:\n"
 	"lda 0xfd12\n"
-	"bita #0x02\n"
+	"bita #0x02\n"	// HSYNC=1?
 	"bne tm01\n"
 "tm02:\n"
 	"lda 0xfd12\n"
-	"bita #0x02\n"
+	"bita #0x02\n"	// HSYNC=0?
 	"beq tm02\n"
-	"lda _timer\n"
+	"lda #13 ;_timer\n"
 "tm03:\n"
 	"deca\n"
 	"bne tm03\n"
@@ -1247,9 +1282,11 @@ void pal_all(unsigned char pal_no, unsigned char color[MAXCOLOR][3])
 	}
 }
 
+#define submode ((volatile unsigned char *)0xfd12)
+
 void wait_vsync(void)
 {
-	unsigned char *submode = (unsigned char *)0xfd12;
+//	unsigned char *submode = (unsigned char *)0xfd12;
 	while((*submode & 0x01)); /* WAIT VSYNC */
 	while(!(*submode & 0x01));
 }
@@ -1268,7 +1305,7 @@ void set_constrast(short value, unsigned char org_pal[MAXCOLOR][3], int pal_no)
 {
 	unsigned short no;
 	unsigned char i,j,k,l;
-	signed char getpal[3], pal[3];
+	signed char getpal[3], pal[3][MAXCOLOR];
 //	signed char 
 //	short temp_pal;
 //	unsigned char value2 = value;
@@ -1276,6 +1313,8 @@ void set_constrast(short value, unsigned char org_pal[MAXCOLOR][3], int pal_no)
 //	for(i = 0; i < 16; i++){
 //	for(j = 0; j < 16; j++){
 //	for(k = 0; k < 16; k++){
+
+//	sub_disable2();
 
 	for(i = 1; i < MAXCOLOR; i++){
 		no = (i & 1) * 8 + (i & 2) * 64 + (i & 4) * 512;
@@ -1288,9 +1327,9 @@ void set_constrast(short value, unsigned char org_pal[MAXCOLOR][3], int pal_no)
 
 		for(l = 0; l < 3; l++){
 			if(value == 0){
-				pal[l] = getpal[l];
+				pal[l][i] = getpal[l];
 			}else if(value > 0){
-				pal[l] = getpal[l] + value;
+				pal[l][i] = getpal[l] + value;
 			}else{
 /*				temp_pal = (15+value);
 				temp_pal *= getpal[l];
@@ -1298,18 +1337,22 @@ void set_constrast(short value, unsigned char org_pal[MAXCOLOR][3], int pal_no)
 */
 //				temp_pal = (short)getpal[l] * (15 + value) / 15;
 //				pal[l] = (unsigned char)temp_pal;
-				pal[l] = (getpal[l] + value) ;
+				pal[l][i] = (getpal[l] + value) ;
 			}
 
-			if(pal[l] < 0)
-				pal[l] = 0;
-			else if(pal[l] > 15)
-				pal[l] = 15;
+			if(pal[l][i] < 0)
+				pal[l][i] = 0;
+			else if(pal[l][i] > 15)
+				pal[l][i] = 15;
 //		}
-
-		pal_set(pal_no, no, pal[0], pal[1], pal[2]);
 		}
 	}
+
+	for(i = 1; i < MAXCOLOR; i++){
+		no = (i & 1) * 8 + (i & 2) * 64 + (i & 4) * 512;
+		pal_set(pal_no, no, pal[0][i], pal[1][i], pal[2][i]);
+	}
+//	sub_enable();
 //	}
 //	}
 
@@ -1901,16 +1944,18 @@ asm(
 			fadeflag = 1;
 			sub_disable();
 			vram_off();
+			sub_enable();
+			sub_disable2();
 asm(
 	"orcc	#0x10\n"
-	"clr	0xfd93\n"
+	";clr	0xfd93\n"
 );
 			fadeinblack(org_pal, 0, 3);
 //			pal_all(0, org_pal);
 //			set_constrast(0, org_pal, 0);
 asm(
-	"lda	#0xc0\n"
-	"sta	0xfd93\n"
+	";lda	#0xc0\n"
+	";sta	0xfd93\n"
 	"andcc	#0xEF\n"
 );
 			sub_enable();
@@ -1921,16 +1966,16 @@ asm(
 	set_key_irq();
 	keyrepeat_on();
 	keyscan_off();
-	sub_disable();
+	sub_disable2();
 asm(
 	"orcc	#0x10\n"
-	"clr	0xfd93\n"
+	";clr	0xfd93\n"
 );
 	fadeoutblack(org_pal, 0, 3);
 	pal_all(0, org_pal);
 asm(
-	"lda	#0xc0\n"
-	"sta	0xfd93\n"
+	";lda	#0xc0\n"
+	";sta	0xfd93\n"
 	"andcc	#0xEF\n"
 );
 	sub_enable();
