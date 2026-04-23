@@ -43,7 +43,7 @@ FILE *stream[2];
 #define PARTS_NUM2 8*4
 
 #define PARTS_SIZE2 8*3*PARTS_NUM2
-unsigned char pcg_data2[PARTS_SIZE];
+unsigned char pcg_data2[PARTS_SIZE2];
 
 #define MASK_SIZE 8*PARTS_NUM2
 
@@ -143,7 +143,7 @@ void clearBuffer(void) {
 void setpcg(unsigned char *data, unsigned char bank, int num)
 {
 	int i, j, k = bank * 256 * 8;
-	DI();
+//	DI();
 	for(j = 0; j < num; ++j){
 		for(i = 0; i < 8; ++i){
 			outp(0xe5, 0x01);	/* blue */
@@ -155,32 +155,32 @@ void setpcg(unsigned char *data, unsigned char bank, int num)
 			++k;
 		}
 	}
-	outp(0xe6, 0x00);	/* close */
-	EI();
+	outp(0xe6, 0x00);	/* PCG close */
+//	EI();
 }
 
 void pat_sub(void)
 {
-	DI();
+//	DI();
 
-	outp(0xe3,0);
+//	outp(0xe3,0);		/* VRAM */
 	pcgvram1[vram_ofs] = no;
 //	pcgvram2[vram_ofs] = 0x08;
 
-	outp(0xe1,0);
-	EI();
+//	outp(0xe1,0);		/* DRAM */
+//	EI();
 }
 
 void pat_sub2(void)
 {
-	DI();
+//	DI();
 
-	outp(0xe3,0);
+//	outp(0xe3,0);		/* VRAM */
 	pcgvram1[vram_ofs] = 0;
 //	pcgvram2[vram_ofs] = 0x08;
 
-	outp(0xe1,0);
-	EI();
+//	outp(0xe1,0);		/* DRAM */
+//	EI();
 }
 
 void put_chrmz_pat(unsigned char no2, unsigned char num)
@@ -205,7 +205,8 @@ void put_chrmz_pat(unsigned char no2, unsigned char num)
 		++i;
 		++l;
 	}
-	outp(0xe6, 0x00);	/* close */
+	outp(0xe6, 0x00);	/* PCG close */
+//	outp(0xe3,0);		/* VRAM */
 }
 
 void chr_sub(void)
@@ -213,16 +214,16 @@ void chr_sub(void)
 	unsigned char num = (i - CHR_X) + (j - CHR_Y) * 2;
 	unsigned char no2 = chr_tbl[dir * 2 + dir2][num];
 
-	DI();
+//	DI();
 
 	put_chrmz_pat(no2, num);
 
-	outp(0xe3,0);
+//	outp(0xe3,0);		/* VRAM */
 	pcgvram1[vram_ofs] = num;
 	pcgvram2[vram_ofs] = 0x08 | 0x40;
 
-	outp(0xe1,0);
-	EI();
+//	outp(0xe1,0);		/* DRAM */
+//	EI();
 //	pat_sub();
 }
 
@@ -262,8 +263,8 @@ enum {
 };
 
 void cls(void) {
-	DI();
-	outp(0xe3,0);
+//	DI();
+//	outp(0xe3,0);		/* VRAM */
 	k = 0;
 	for(j = 0; j < 25; j++){
 		for(i = 0; i < 40; ++i){
@@ -277,15 +278,15 @@ void cls(void) {
 			++k;
 		}
 	}
-	outp(0xe1,0);
-	EI();
+//	outp(0xe1,0);		/* DRAM */
+//	EI();
 }
 
 void cls2(void) {
 //	int i,j,k=0;
 	k = 0;
-	DI();
-	outp(0xe3,0);
+//	DI();
+//	outp(0xe3,0);		/* VRAM */
 	for(j = 0; j < 25; j++){
 		for(i = 0; i < 40; ++i){
 //			put_chr8(i, j, ' ', 0);
@@ -298,8 +299,8 @@ void cls2(void) {
 			++k;
 		}
 	}
-	outp(0xe1,0);
-	EI();
+//	outp(0xe1,0);		/* DRAM */
+//	EI();
 }
 
 unsigned char keycode = 0;
@@ -312,8 +313,8 @@ unsigned char st1,st2;
 
 unsigned char keyscan(void)
 {
-	DI();
-	outp(0xe3,0);
+//	DI();
+//	outp(0xe3,0);		/* VRAM,KEY */
 	keycode = 0;
 //	DI();
 //	outp(0x1c00,14);
@@ -356,8 +357,8 @@ unsigned char keyscan(void)
 		keycode |= KEY_B;
 	}
 
-	outp(0xe1,0);
-	EI();
+//	outp(0xe1,0);		/* DRAM */
+//	EI();
 	return keycode;
 }
 
@@ -376,8 +377,7 @@ unsigned char *old_map_adr;
 
 int main(void)
 {
-	outp(0xe3,0);
-	outp(0xf0,0x01);
+	outp(0xf0,0x01);	/* PCG ON */
 /*	for(i = 0; i < 256; ++i){
 		pcgvram1[i] = i;
 		pcgvram2[i] = 0x08 | 0x40;
@@ -386,11 +386,12 @@ int main(void)
 	if(bload("elmst15.pcg", mapdata, PARTS_SIZE))
 		return ERROR;
 
+	outp(0xe3,0);		/* VRAM */
 	setpcg(mapdata, 0, PARTS_NUM);
 
 	if(bload("elmch15.pcg", pcg_data2, PARTS_SIZE2))
 		return ERROR;
-	setpcg(pcg_data2, 1, PARTS_NUM2);
+//	setpcg(pcg_data2, 1, PARTS_NUM2);
 
 	if(bload("elmsk15.pcg", mask_data, MASK_SIZE))
 		return ERROR;
@@ -401,6 +402,7 @@ int main(void)
 		return ERROR;
 	}
 
+	outp(0xe3,0);		/* VRAM */
 	cls();
 
 	for(i = 0; i < X_SIZE; ++i){
