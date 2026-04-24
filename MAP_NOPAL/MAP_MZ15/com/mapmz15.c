@@ -588,7 +588,7 @@ loop1:
 	add	hl,hl
 	ld	bc,PARTS_HEAD
 	add	hl,bc
-	ld	bc,_mapdata+7
+	ld	bc,_mapdata
 	add	hl,bc
 	ex	de,hl
 
@@ -732,28 +732,8 @@ int main(void)
 			vram_ofs_tmp = vram_ofs;
 			map_adr = &map_data[xx + yy * 32];
 
-			for(j = 0; j < Y_SIZE / 2; ++j){
+			map_sub();
 
-				for(i = 0; i < X_SIZE / 2; ++i){
-					data_no = *data;
-
-					pat_no = ((data_no >> 4) & 0x0f) | ((data_no << 4) & 0xf0);
-
-					pat_adr = &mapdata[PARTS_HEAD + pat_no * 4];
-
-					*(map_adr++) = *(pat_adr++);
-					*map_adr = *(pat_adr++);
-					map_adr += (32 - 1);
-					*(map_adr++) = *(pat_adr++);
-					*map_adr = *(pat_adr);
-					map_adr -= (32 - 1);
-
-					++data;
-				}
-				data_tmp += MAP_SIZE_X;
-				data = data_tmp;
-				map_adr += (32 * 2 - X_SIZE);
-			}
 			dir2 = 1 - dir2;
 			map_adr = &map_data[1 + 1 * 32];
 			old_map_adr = &old_map_data[1 + 1 * 32];
