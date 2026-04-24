@@ -549,7 +549,7 @@ void map_sub(void)
 
 					pat_no = ((data_no >> 4) & 0x0f) | ((data_no << 4) & 0xf0);
 
-					pat_adr = &mapdata[7+PARTS_HEAD + pat_no * 4];
+					pat_adr = &mapdata[PARTS_HEAD + pat_no * 4];
 
 					*(map_adr++) = *(pat_adr++);
 					*map_adr = *(pat_adr++);
