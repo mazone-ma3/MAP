@@ -164,7 +164,15 @@ void pat_sub(void)
 //	DI();
 
 //	outp(0xe3,0);		/* VRAM */
-	pcgvram1[vram_ofs] = no;
+//	pcgvram1[vram_ofs] = no;
+__asm
+	ld	bc,0xd400 ; pcgvram1
+	ld	hl,(_vram_ofs)
+	add	hl,bc
+	ld	a,(_no)
+	ld	(hl),a
+__endasm;
+
 //	pcgvram2[vram_ofs] = 0x08;
 
 //	outp(0xe1,0);		/* DRAM */
@@ -176,51 +184,208 @@ void pat_sub2(void)
 //	DI();
 
 //	outp(0xe3,0);		/* VRAM */
-	pcgvram1[vram_ofs] = 0;
+//	pcgvram1[vram_ofs] = 0;
+__asm
+	ld	bc,0xd400 ; pcgvram1
+	ld	hl,(_vram_ofs)
+	add	hl,bc
+;	ld	a,(_no)
+	xor	a
+	ld	(hl),a
+__endasm;
 //	pcgvram2[vram_ofs] = 0x08;
 
 //	outp(0xe1,0);		/* DRAM */
 //	EI();
 }
 
-void put_chrmz_pat(unsigned char no2, unsigned char num)
+unsigned char no2,num;
+unsigned short ii,jj, kk, ll;//, m;
+unsigned char mask;
+
+void put_chrmz_pat(void) //unsigned char no2, unsigned char num) __sdcccall(1)
 {
-	int i,j, k, l, m;
 
-	i = no * 8;
-	j = no2 * 8 * 3;
-	k = (256 + num) * 8;
-	l = no2 * 8;
+	ii = no * 8;
+	jj = no2 * 8 * 3;
+	kk = (256 + num) * 8;
+	ll = no2 * 8;
+__asm
+	push	bc
+	push	de
+	push	hl
 
+	ld	b,8
+chrmzloop:
+	ld	de,_mask_data
+	ld	hl,(_ll)
+	add	hl,de
+	ld	a,(hl)
+	ld	(_mask),a
+
+
+	ld	a,1
+	out	(0xe5),a
+
+	ld	a,(_mask)
+	ld	c,a
+
+	ld	de,0xd000 ;pcgdata
+	ld	hl,(_ii)
+	add	hl,de
+	ld	a,(hl)
+
+	and	a,c
+	ld	c,a
+
+	ld	de,_pcg_data2
+	ld	hl,(_jj)
+	add	hl,de
+	ld	a,(hl)
+	or	a,c
+
+	ld	hl,(_jj)
+	inc	hl
+	ld	(_jj),hl
+
+	ld	de,0xd000 ;pcgdata
+	ld	hl,(_kk)
+	add	hl,de
+	ld	(hl),a
+	push	hl
+
+
+	ld	a,2
+	out	(0xe5),a
+
+	ld	a,(_mask)
+	ld	c,a
+
+	ld	de,0xd000 ;pcgdata
+	ld	hl,(_ii)
+	add	hl,de
+	ld	a,(hl)
+
+	and	a,c
+	ld	c,a
+
+	ld	de,_pcg_data2
+	ld	hl,(_jj)
+	add	hl,de
+	ld	a,(hl)
+	or	a,c
+
+	ld	hl,(_jj)
+	inc	hl
+	ld	(_jj),hl
+
+	ld	de,0xd000 ;pcgdata
+	ld	hl,(_kk)
+	add	hl,de
+	pop	hl
+	ld	(hl),a
+	push	hl
+
+
+	ld	a,3
+	out	(0xe5),a
+
+	ld	a,(_mask)
+	ld	c,a
+
+	ld	de,0xd000 ;pcgdata
+	ld	hl,(_ii)
+	add	hl,de
+	ld	a,(hl)
+
+	and	a,c
+	ld	c,a
+
+	ld	de,_pcg_data2
+	ld	hl,(_jj)
+	add	hl,de
+	ld	a,(hl)
+	or	a,c
+
+	ld	hl,(_jj)
+	inc	hl
+	ld	(_jj),hl
+
+	ld	de,0xd000 ;pcgdata
+	ld	hl,(_kk)
+	add	hl,de
+	pop	hl
+	ld	(hl),a
+
+	ld	hl,(_ii)
+	inc	hl
+	ld	(_ii),hl
+
+	ld	hl,(_kk)
+	inc	hl
+	ld	(_kk),hl
+
+	ld	hl,(_ll)
+	inc	hl
+	ld	(_ll),hl
+
+	dec	b
+	jp	nz,chrmzloop
+
+	xor	a
+	out	(0xe6),a
+
+	pop	hl
+	pop	de
+	pop	bc
+__endasm;
+	return;
+/*
 	for(m = 0; m < 8; ++m){
+		mask = mask_data[ll];
 		outp(0xe5, 0x01);	/* blue */
-		pcgdata[k] = pcgdata[i] & mask_data[l] | pcg_data2[j++];
+/*		pcgdata[kk] = pcgdata[ii] & mask | pcg_data2[jj++];
 
 		outp(0xe5, 0x02);	/* red */
-		pcgdata[k] = pcgdata[i] & mask_data[l] | pcg_data2[j++];
+/*		pcgdata[kk] = pcgdata[ii] & mask | pcg_data2[jj++];
 
 		outp(0xe5, 0x03);	/* green */
-		pcgdata[k++] = pcgdata[i] & mask_data[l] | pcg_data2[j++];
+/*		pcgdata[kk++] = pcgdata[ii] & mask | pcg_data2[jj++];
 
-		++i;
-		++l;
+		++ii;
+		++ll;
 	}
-	outp(0xe6, 0x00);	/* PCG close */
+	outp(0xe6, 0x00);*/	/* PCG close */
 //	outp(0xe3,0);		/* VRAM */
 }
 
 void chr_sub(void)
 {
-	unsigned char num = (i - CHR_X) + (j - CHR_Y) * 2;
-	unsigned char no2 = chr_tbl[dir * 2 + dir2][num];
+//	unsigned char 
+	num = (i - CHR_X) + (j - CHR_Y) * 2;
+//	unsigned char 
+	no2 = chr_tbl[dir * 2 + dir2][num];
 
 //	DI();
 
-	put_chrmz_pat(no2, num);
+	put_chrmz_pat(); //no2, num);
 
 //	outp(0xe3,0);		/* VRAM */
-	pcgvram1[vram_ofs] = num;
-	pcgvram2[vram_ofs] = 0x08 | 0x40;
+//	pcgvram1[vram_ofs] = num;
+//	pcgvram2[vram_ofs] = 0x08 | 0x40;
+__asm
+	ld	hl,0xd400 ; pcgvram1
+	ld	de,(_vram_ofs)
+	add	hl,de
+	ld	a,(_num)
+	ld	(hl),a
+
+	ld	hl,0xdc00 ; pcgvram2
+;	ld	de,(_vram_ofs)
+	add	hl,de
+	ld	a,0x08 | 0x40
+	ld	(hl),a
+__endasm;
 
 //	outp(0xe1,0);		/* DRAM */
 //	EI();
@@ -375,6 +540,113 @@ unsigned char sub_flag;
 unsigned char *map_adr;
 unsigned char *old_map_adr;
 
+void map_sub(void)
+{
+/*			for(j = 0; j < Y_SIZE / 2; ++j){
+
+				for(i = 0; i < X_SIZE / 2; ++i){
+					data_no = *data;
+
+					pat_no = ((data_no >> 4) & 0x0f) | ((data_no << 4) & 0xf0);
+
+					pat_adr = &mapdata[7+PARTS_HEAD + pat_no * 4];
+
+					*(map_adr++) = *(pat_adr++);
+					*map_adr = *(pat_adr++);
+					map_adr += (32 - 1);
+					*(map_adr++) = *(pat_adr++);
+					*map_adr = *(pat_adr);
+					map_adr -= (32 - 1);
+
+					++data;
+				}
+				data_tmp += MAP_SIZE_X;
+				data = data_tmp;
+				map_adr += (32 * 2 - X_SIZE);
+			}
+
+			return;
+*/
+__asm
+	ld	de,(_map_adr)
+	ld	b,Y_SIZE / 2
+loop0:
+	push	bc
+	ld	b,X_SIZE / 2
+loop1:
+	push	bc
+	ld	hl,(_data)
+	ld	a,(hl)
+	rlc	a
+	rlc	a
+	rlc	a
+	rlc	a
+
+	ld	l,a
+	ld	h,0
+	add	hl,hl
+	add	hl,hl
+	ld	bc,PARTS_HEAD
+	add	hl,bc
+	ld	bc,_mapdata+7
+	add	hl,bc
+	ex	de,hl
+
+;	ld	hl,(_map_adr)
+
+	ld	a,(de)
+	ld	(hl),a
+	inc	de
+	inc	hl
+
+	ld	a,(de)
+	ld	(hl),a
+	inc	de
+	ld	bc,32-1
+	add	hl,bc
+
+	ld	a,(de)
+	ld	(hl),a
+	inc	de
+	inc	hl
+
+	ld	a,(de)
+	ld	(hl),a
+	ld	bc,-(32-1)
+	add	hl,bc
+
+;	ld	(_map_adr),hl
+
+	ex	de,hl
+	ld	hl,(_data)
+	inc	hl
+	ld	(_data),hl
+
+	pop	bc
+	djnz loop1
+
+;	push	bc
+	ex	de,hl
+;	ld	hl,(_map_adr)
+	ld	bc,32 * 2 - X_SIZE
+	add	hl,bc
+;	ld	(_map_adr),hl
+	ex	de,hl
+
+	ld	hl,(_data_tmp)
+	ld	bc,MAP_SIZE_X
+	add	hl,bc
+	ld	(_data_tmp),hl
+	ld	(_data),hl
+
+	pop	bc
+	djnz loop0
+
+;	ld	hl,_map_data+1+1*32
+;	ld	(_map_adr),hl
+__endasm;
+}
+
 int main(void)
 {
 	outp(0xf0,0x01);	/* PCG ON */
@@ -486,7 +758,7 @@ int main(void)
 			map_adr = &map_data[1 + 1 * 32];
 			old_map_adr = &old_map_data[1 + 1 * 32];
 
-			if((old_x != x)){
+/*			if((old_x != x)){
 				for(i = 1; i < (X_SIZE - 1); ++i){
 					for(j = 1; j < (Y_SIZE - 1); ++j){
 						no = *map_adr;
@@ -506,7 +778,122 @@ int main(void)
 							pat_sub();
 							*old_map_adr = no;
 						}
-						vram_ofs += SIZE;
+*/
+__asm
+	ld	hl,_old_x
+	ld	a,(_x)
+	cp	a,(hl)
+	jp	z,skip00
+
+	ld	hl,(_map_adr)
+	ld	de,(_old_map_adr)
+
+	ld	c,1
+skip01:
+	ld	a,c
+	ld	(_i),a
+	ld	b,1
+skip02:
+	ld	a,b
+	ld	(_j),a
+	push	bc
+;	ld	hl,(_map_adr)
+	ld	a,(hl)
+	ld	(_no),a
+	ld	a,c ;(_i)
+	cp	a,CHR_X	; i - CHR_X >= 0
+	jr	c,skip1
+	cp	a,CHR_X+2	; i - (CHR_X+1) <= 0
+;	jr	z,skip0_1
+	jr	nc,skip1
+skip0_1:
+	ld	a,b ;(_j)
+	cp	a,CHR_Y	; j - CHR_Y >= 0
+	jr	c,skip1
+	cp	a,CHR_Y+2	; j - (CHR_Y+1) <= 0
+;	jr	z,skip0_2
+	jr	nc,skip1
+skip0_2:
+;	push	bc
+	push	hl
+	push	de
+	call	_chr_sub
+	pop	de
+	pop	hl
+;	pop	bc
+	jr	skip2
+skip1:
+;	ld	a,(hl)
+;	ld	de,(_old_map_adr)
+	ld	a,(de)
+	cp	a,(hl)
+	jr	z,skip2
+	ld	a,(hl)
+	ld	(de),a
+	push	hl
+	push	bc
+	push	de
+	call	_pat_sub
+	pop	de
+	pop	bc
+	pop	hl
+skip2:
+	push	hl
+	ld	hl,(_vram_ofs)
+	ld	bc,SIZE
+	add	hl,bc
+	ld	(_vram_ofs),hl
+	pop	hl
+
+	ld	bc,32
+;	ld	hl,(_map_adr)
+	add	hl,bc
+;	ld	(_map_adr),hl
+	ex	de,hl
+;	ld	hl,(_old_map_adr)
+	add	hl,bc
+;	ld	(_old_map_adr),hl
+	ex	de,hl
+
+	pop	bc
+;	ld	hl,_j
+;	inc	(hl)
+;	ld	a,(hl)
+	inc	b
+	ld	a,b
+	cp	a,Y_SIZE-1
+	jr	nz,skip02
+
+	push	bc
+	push	hl
+	ld	hl,(_vram_ofs_tmp)
+	ld	bc,PARTS_X
+	add	hl,bc
+	ld	(_vram_ofs_tmp),hl
+	ld	(_vram_ofs),hl
+	pop	hl
+
+	ld	bc,1 - 32 * (X_SIZE - 2)
+;	ld	hl,(_map_adr)
+	add	hl,bc
+;	ld	(_map_adr),hl
+	ex	de,hl
+;	ld	hl,(_old_map_adr)
+	add	hl,bc
+;	ld	(_old_map_adr),hl
+	ex	de,hl
+	pop	bc
+
+;	ld	hl,_i
+;	inc	(hl)
+;	ld	a,(hl)
+	inc	c
+	ld	a,c
+	cp	a,X_SIZE-1
+	jp	nz,skip01
+	jp	skip05
+__endasm;
+/*						vram_ofs += SIZE;
 						map_adr += 32;
 						old_map_adr += 32;
 					}
@@ -537,15 +924,122 @@ int main(void)
 							pat_sub();
 							*old_map_adr = no;
 						}
+*/
+__asm
+skip00:
+	ld	c,1
+	ld	hl,(_map_adr)
+	ld	de,(_old_map_adr)
+
+skip03:
+	ld	a,c
+	ld	(_j),a
+	ld	b,1
+skip04:
+	ld	a,b
+	ld	(_i),a
+	push	bc
+;	ld	hl,(_map_adr)
+	ld	a,(hl)
+	ld	(_no),a
+	ld	a,b ;(_i)
+	cp	a,CHR_X	; i - CHR_X >= 0
+	jr	c,skip4
+	cp	a,CHR_X+2	; i - (CHR_X+1) <= 0
+;	jr	z,skip3_1
+	jr	nc,skip4
+skip3_1:
+	ld	a,c ;(_j)
+	cp	a,CHR_Y	; j - CHR_Y >= 0
+	jr	c,skip4
+	cp	a,CHR_Y+2	; j - (CHR_Y+1) <= 0
+;	jr	z,skip3_2
+	jr	nc,skip4
+skip3_2:
+;	push	bc
+	push	hl
+	push	de
+	call	_chr_sub
+	pop	de
+	pop	hl
+;	pop	bc
+	jr	skip5
+skip4:
+;	ld	a,(hl)
+;	ld	de,(_old_map_adr)
+	ld	a,(de)
+	cp	a,(hl)
+	jr	z,skip5
+	ld	a,(hl)
+	ld	(de),a
+;	push	bc
+	push	hl
+	push	de
+	call	_pat_sub
+	pop	de
+	pop	hl
+;	pop	bc
+skip5:
+	push	hl
+	ld	hl,(_vram_ofs)
+	ld	bc,PARTS_X
+	add	hl,bc
+	ld	(_vram_ofs),hl
+	pop	hl
+;	ld	hl,(_map_adr)
+	inc	hl
+;	ld	(_map_adr),hl
+;	ld	de,(_old_map_adr)
+	inc	de
+;	ld	(_old_map_adr),de
+
+	pop	bc
+;	ld	hl,_i
+;	inc	(hl)
+;	ld	a,(hl)
+	inc	b
+	ld	a,b
+	cp	a,X_SIZE-1
+	jr	nz,skip04
+
+	push	bc
+	push	hl
+	ld	hl,(_vram_ofs)
+	ld	bc,SIZE - (PARTS_X) * (X_SIZE - 2)
+	add	hl,bc
+	ld	(_vram_ofs),hl
+	pop	hl
+	ld	bc,32 - (X_SIZE - 2)
+;	ld	hl,(_map_adr)
+	add	hl,bc
+;	ld	(_map_adr),hl
+	ex	de,hl
+;	ld	hl,(_old_map_adr)
+	add	hl,bc
+;	ld	(_old_map_adr),hl
+	ex	de,hl
+	pop	bc
+
+;	ld	hl,_j
+;	inc	(hl)
+;	ld	a,(hl)
+	inc	c
+	ld	a,c
+	cp	a,Y_SIZE-1
+	jp	nz,skip03
+skip05:
+__endasm;
+/*
 						vram_ofs += PARTS_X;
 						++map_adr;
 						++old_map_adr;
 					}
+
 					vram_ofs += (SIZE - (PARTS_X) * (X_SIZE - 2));
 					map_adr += (32 - (X_SIZE - 2));
 					old_map_adr += (32 - (X_SIZE - 2));
 				}
-			}
+			}*/
 		}
 		old_x = x;
 		old_y = y;

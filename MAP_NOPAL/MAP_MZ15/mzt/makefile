@@ -7,7 +7,7 @@ CFLAGS   = +mz -compiler sdcc --sdcccall0 --opt-code-speed
 LDFLAGS  = +mz -create-app -lm
 
 # 中間ファイル
-OBJS     = $(TARGET).o
+OBJS     = $(TARGET).o mapdata.o
 
 # --- ルール ---
 
@@ -22,7 +22,8 @@ $(TARGET).mzt: $(OBJS)
 	$(CC) $(LDFLAGS) -o $(TARGET) $(OBJS) -m -v
 
 # 依存関係
-$(TARGET).o: $(TARGET).c inkey.h
+$(TARGET).o: $(TARGET).c inkey.h mapdata.h
+mapdata.o: mapdata.c mapdata.h elmst15.h elmch15.h elmsk15.h elmstmap.h
 
 # 3. おまけ：com版をテストしたい場合
 #cpm
